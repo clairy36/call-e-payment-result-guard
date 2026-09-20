@@ -1,0 +1,1147 @@
+{
+  "data_origin": "synthetic",
+  "real_integration": false,
+  "components": {
+    "core": {
+      "passed": true,
+      "seconds": 0.42,
+      "command": [
+        "/Users/a1/Desktop/Call-E/workspace/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-o",
+        "addopts=",
+        "-q"
+      ],
+      "evidence_level": "simulation"
+    },
+    "scripted_replay": {
+      "passed": true,
+      "seconds": 0.03,
+      "command": [
+        "/Users/a1/Desktop/Call-E/workspace/.venv/bin/python",
+        "scripts/replay.py"
+      ],
+      "evidence_level": "sanitized_scripted_call_replay"
+    },
+    "kept": {
+      "passed": true,
+      "seconds": 0.74,
+      "command": [
+        "/Users/a1/Desktop/Call-E/workspace/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-o",
+        "addopts=",
+        "-q"
+      ],
+      "evidence_level": "local_runtime_integration"
+    },
+    "recover": {
+      "passed": true,
+      "seconds": 2.56,
+      "command": [
+        "npm",
+        "test"
+      ],
+      "evidence_level": "local_runtime_integration"
+    }
+  },
+  "scenarios": {
+    "payment_promise": {
+      "denominator": 26,
+      "false_accept": 0,
+      "false_reject": 0,
+      "handling_counts": {
+        "supported": 4,
+        "needs_review": 7,
+        "unsupported": 11,
+        "conditional": 2,
+        "contradicted": 2
+      },
+      "rows": [
+        {
+          "id": "kept_ok",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "recordable",
+            "reason": null
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "recordable",
+            "normalized_claim": {
+              "kind": "payment_promise",
+              "amount_minor": 10000,
+              "date": "2026-10-10"
+            },
+            "reason_codes": [],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "record_claim",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_missing",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "MISSING_EVIDENCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "MISSING_EVIDENCE"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_quote",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "QUOTE_NOT_FOUND"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "QUOTE_NOT_FOUND"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_bot",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "WRONG_SPEAKER"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "WRONG_SPEAKER"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_unknown",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "WRONG_SPEAKER"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "WRONG_SPEAKER"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_binding",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "OBJECT_MISMATCH"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "OBJECT_MISMATCH"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_scope",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_SOURCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_SOURCE"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_language",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "UNSUPPORTED_EXPRESSION"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "UNSUPPORTED_EXPRESSION"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_conditional",
+          "expected": {
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "reason": "CONDITIONAL_STATEMENT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "conditional_plan"
+            },
+            "reason_codes": [
+              "CONDITIONAL_STATEMENT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_negative",
+          "expected": {
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "reason": "CONTRADICTORY_EVIDENCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_correction",
+          "expected": {
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "reason": "CONTRADICTORY_EVIDENCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_reported_paid",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "pending_external_verification",
+            "reason": "PAYMENT_SUCCESS_NOT_VERIFIED"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "pending_external_verification",
+            "normalized_claim": {
+              "kind": "reported_paid"
+            },
+            "reason_codes": [
+              "PAYMENT_SUCCESS_NOT_VERIFIED"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_paraphrase",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "UNSUPPORTED_EXPRESSION"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "UNSUPPORTED_EXPRESSION"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_variant",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "recordable",
+            "reason": null
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "recordable",
+            "normalized_claim": {
+              "kind": "payment_promise",
+              "amount_minor": 10000,
+              "date": "2026-10-10"
+            },
+            "reason_codes": [],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "record_claim",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_partial_quote",
+          "expected": {
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "reason": "CONDITIONAL_STATEMENT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "conditional_plan"
+            },
+            "reason_codes": [
+              "CONDITIONAL_STATEMENT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "kept_external_claim",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "recordable",
+            "reason": null
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "recordable",
+            "normalized_claim": {
+              "kind": "payment_promise",
+              "amount_minor": 10000,
+              "date": "2026-10-10"
+            },
+            "reason_codes": [],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "record_claim",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_1k",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_1\u4e07",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_about 100",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_100 to 200",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_100 if approved",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_1,00",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_NaN",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_-100",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_0",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "amount_100.001",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_AMOUNT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_AMOUNT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        }
+      ]
+    },
+    "payment_recovery": {
+      "denominator": 16,
+      "false_accept": 0,
+      "false_reject": 0,
+      "handling_counts": {
+        "supported": 4,
+        "needs_review": 7,
+        "unsupported": 1,
+        "conditional": 2,
+        "contradicted": 2
+      },
+      "rows": [
+        {
+          "id": "recover_ok",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "advisory_only",
+            "reason": null
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "advisory_only",
+            "normalized_claim": {
+              "kind": "retry_requested"
+            },
+            "reason_codes": [
+              "PAYMENT_SUCCESS_NOT_VERIFIED"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_missing",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "MISSING_EVIDENCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "MISSING_EVIDENCE"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_quote",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "QUOTE_NOT_FOUND"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "QUOTE_NOT_FOUND"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_bot",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "WRONG_SPEAKER"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "WRONG_SPEAKER"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_unknown",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "WRONG_SPEAKER"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "WRONG_SPEAKER"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_binding",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "OBJECT_MISMATCH"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "OBJECT_MISMATCH"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_scope",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "AMBIGUOUS_SOURCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "AMBIGUOUS_SOURCE"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_language",
+          "expected": {
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "reason": "UNSUPPORTED_EXPRESSION"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "unsupported",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "UNSUPPORTED_EXPRESSION"
+            ],
+            "evidence_refs": [],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_conditional",
+          "expected": {
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "reason": "CONDITIONAL_STATEMENT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "conditional_plan"
+            },
+            "reason_codes": [
+              "CONDITIONAL_STATEMENT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_negative",
+          "expected": {
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "reason": "CONTRADICTORY_EVIDENCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_correction",
+          "expected": {
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "reason": "CONTRADICTORY_EVIDENCE"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "contradicted",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_reported_paid",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "pending_external_verification",
+            "reason": "PAYMENT_SUCCESS_NOT_VERIFIED"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "pending_external_verification",
+            "normalized_claim": {
+              "kind": "reported_paid"
+            },
+            "reason_codes": [
+              "PAYMENT_SUCCESS_NOT_VERIFIED"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_paraphrase",
+          "expected": {
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "reason": "UNSUPPORTED_EXPRESSION"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "needs_review",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "unknown"
+            },
+            "reason_codes": [
+              "UNSUPPORTED_EXPRESSION"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_variant",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "advisory_only",
+            "reason": null
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "advisory_only",
+            "normalized_claim": {
+              "kind": "retry_requested"
+            },
+            "reason_codes": [
+              "PAYMENT_SUCCESS_NOT_VERIFIED"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_partial_quote",
+          "expected": {
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "reason": "CONDITIONAL_STATEMENT"
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "conditional",
+            "business_effect_status": "review_required",
+            "normalized_claim": {
+              "kind": "conditional_plan"
+            },
+            "reason_codes": [
+              "CONDITIONAL_STATEMENT"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        },
+        {
+          "id": "recover_external_claim",
+          "expected": {
+            "claim_status": "supported",
+            "business_effect_status": "advisory_only",
+            "reason": null
+          },
+          "actual": {
+            "schema_version": "0.1",
+            "claim_status": "supported",
+            "business_effect_status": "advisory_only",
+            "normalized_claim": {
+              "kind": "retry_requested"
+            },
+            "reason_codes": [
+              "PAYMENT_SUCCESS_NOT_VERIFIED"
+            ],
+            "evidence_refs": [
+              "r0:a0:t0"
+            ],
+            "next_step": "operator_review",
+            "execution_authorized": false,
+            "data_origin": "synthetic"
+          },
+          "matched": true
+        }
+      ]
+    }
+  },
+  "passed": true
+}

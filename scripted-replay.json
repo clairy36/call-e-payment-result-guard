@@ -1,0 +1,48 @@
+{
+  "evidence_level": "sanitized_scripted_call_replay",
+  "live_calls_this_run": 0,
+  "host_integration_verified": false,
+  "regression_passed": true,
+  "targets_complete": false,
+  "rows": [
+    {
+      "id": "P01",
+      "provider_task_completed": true,
+      "target_line_present": false,
+      "amount_matches": null,
+      "condition_present": false,
+      "claim_status": "unsupported",
+      "business_effect_status": "review_required",
+      "reason_codes": [
+        "UNSUPPORTED_EXPRESSION"
+      ],
+      "execution_authorized": false
+    },
+    {
+      "id": "P02",
+      "provider_task_completed": true,
+      "target_line_present": false,
+      "amount_matches": false,
+      "condition_present": true,
+      "claim_status": "unsupported",
+      "business_effect_status": "review_required",
+      "reason_codes": [
+        "UNSUPPORTED_EXPRESSION"
+      ],
+      "execution_authorized": false
+    },
+    {
+      "id": "P03",
+      "provider_task_completed": true,
+      "target_line_present": true,
+      "amount_matches": null,
+      "condition_present": false,
+      "claim_status": "unsupported",
+      "business_effect_status": "review_required",
+      "reason_codes": [
+        "UNSUPPORTED_EXPRESSION"
+      ],
+      "execution_authorized": false
+    }
+  ]
+}

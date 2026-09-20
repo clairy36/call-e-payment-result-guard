@@ -1,0 +1,12 @@
+{
+  "baseline_upstream": "707122340774e3d63d5ce87c643695afc50d53cd",
+  "local_baseline": "6ca86ed",
+  "parent_implementation_commit": "5da61d31d8f5b2fb784b78d9e29a998c50b55f9d",
+  "revision": "v0.2 staged supplement",
+  "apply_check": "PASS",
+  "verification_method": "isolated Git index initialized from baseline; cached apply and full tree comparison",
+  "expected_tree": "a10f0bacf4f8952c98308cbcb44ba7edad4611e7",
+  "applied_tree": "a10f0bacf4f8952c98308cbcb44ba7edad4611e7",
+  "exact_tree_match": true,
+  "patch_bytes": 247842
+}

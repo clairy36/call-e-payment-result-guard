@@ -1,0 +1,15 @@
+
+> recover-app@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /Users/a1/Desktop/Call-E/workspace/payment-guard-replay/apps/typescript/recover
+
+ ✓ tests/webhook-result-guard.test.ts (17 tests) 301ms
+ ✓ tests/result-guard.test.ts (32 tests) 1199ms
+
+ Test Files  2 passed (2)
+      Tests  49 passed (49)
+   Start at  02:35:12
+   Duration  1.56s (transform 118ms, setup 28ms, collect 195ms, tests 1.50s, environment 0ms, prepare 184ms)
+

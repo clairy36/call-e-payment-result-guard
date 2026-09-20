@@ -1,0 +1,23 @@
+[
+  {
+    "case": "unit",
+    "data_origin": "synthetic",
+    "verdict": "promise_recorded",
+    "amount_minor": 100,
+    "guard": null
+  },
+  {
+    "case": "condition",
+    "data_origin": "synthetic",
+    "verdict": "promise_recorded",
+    "amount_minor": 10000,
+    "guard": null
+  },
+  {
+    "case": "negative",
+    "data_origin": "synthetic",
+    "verdict": "promise_recorded",
+    "amount_minor": 125000,
+    "guard": null
+  }
+]
