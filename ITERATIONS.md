@@ -1,55 +1,55 @@
-# 版本迭代与测试过程
+# Version history and validation process
 
-交付版本：v0.2（回放与验收补充版）。上一交付包保持不动。版本号属于交付产物，未改变核心 API schema_version=0.1。
+Delivery version: v0.2, the replay and coverage supplement. The earlier local package is retained. This delivery version does not change the core API's `schema_version=0.1`.
 
-## 本次解决的问题
+## Problem addressed by this supplement
 
-通话返回 completed、task_completed=true，不能说明目标台词取得，也不能说明结论有证据或可以推进业务状态。此前三项系统话术测试均完成通话，但只有 P03 完整读出目标句。本版将这几层结果分开呈现，不把保守转复核当成新增语义识别能力。
+`completed` and `task_completed=true` do not establish target-utterance acquisition, evidence support, or permission to advance a business state. All three system-script calls completed, but only P03 returned the full target line. This supplement reports those layers separately and does not present conservative review routing as new semantic coverage.
 
-## 从初版到本版的过程
+## Development and observation rounds
 
-| 轮次 | 做法 | 观察结果 | 随后调整及其验证状态 |
+| Round | Approach | Observation | Adjustment and evidence status |
 | --- | --- | --- | --- |
-| v0.1 本地开发 | 共享核心、kept / Recover 薄适配器和最小运行路径 | 历史 302 项测试通过；42 个合成案例符合预期 | 尚无真实电话证据，保留原始离线结论 |
-| T1 浏览器任务 | 聊天界面准备 P01 | 计划准备中断，没有取得 call_id 或转写；后端零通话来自助手诊断 | 转 API，不能把浏览器准备说成真实通话 |
-| T2 首次 API | 默认 AI 接待线路，虚构付款角色扮演 | 首次 schema 被 400 拒绝；复用 kept schema 后实际拨通约 8.84 秒，只获得问候 | schema 修正已取得 API 接受；业务目标未达成 |
-| T3 默认接待线路重测 | P01 明确承诺、P02 条件承诺 | 分别约 67 秒、46.4 秒；对方拒绝付款/审批角色扮演，P03 未拨 | 根据用户要求改为自愿朗读虚构系统测试台词 |
-| T4 系统话术模拟 | 先征询意愿，再给预设台词；三个场景各一次 | P01 59 秒，目标句缺失；P02 49.6 秒，条件保留但金额变为 100100；P03 45.1 秒，完整否认句 | 得到实际电话样本；不能把脚本朗读作为自然客户业务效果 |
-| v0.2 本地优化 | 将 T4 脱敏后纳入独立回放与验收 | 本次 307 项测试通过；3 个观察结果可复现；已取得 1 个完整目标句；另 2 个场景保留补充验证事项 | 已验证的是回归与验收脚本；本版没有再次拨号 |
+| v0.1 local development | Shared core, kept/Recover adapters, minimal host paths | Historical 302 tests; 42 synthetic fixtures matched expectations | Original results remain local validation, without live-call evidence at that stage |
+| T1 browser task | Prepare P01 in the chat interface | Preparation interrupted; no call ID or transcript obtained; zero backend calls was an assistant diagnostic | Move to the API; preparation is not a completed real call |
+| T2 initial API | Fictional payment role-play with the default AI receptionist | Initial schema rejected with HTTP 400; existing kept schema then accepted; actual call lasted about 8.84 seconds and obtained only a greeting | Schema correction enabled submission; target sample remained outstanding |
+| T3 default-receiver restart | P01 explicit promise and P02 conditional promise | About 67 and 46.4 seconds; recipient declined payment/approval role-play; P03 not placed | Owner requested consensual reading of fictional system-test lines |
+| T4 scripted system test | Ask willingness, then supply a target line; one call per scenario | P01: 59 seconds, target missing. P02: 49.6 seconds, condition retained but amount became 100100. P03: 45.1 seconds, full denial | Actual scripted samples acquired; not natural-customer business outcomes |
+| v0.2 local supplement | Sanitize T4 inputs and add independent replay/coverage checks | 307 tests; three observations reproduced; one exact target line acquired and two coverage follow-ups retained | Replay and coverage tooling verified; no additional call in this supplement |
 
-新购号码曾尝试配置接听流程，但聊天回复和号码页面状态不一致，未实拨验证；后续按用户指令继续使用默认测试号码。该准备过程不计入有效电话案例。
+A purchased inbound number was also prepared, but its assistant and number-page states differed and actual reception was not tested. The owner subsequently selected the original default test recipient. That preparation is not counted as a validated call scenario.
 
-## 三个场景的证据链
+## Evidence for the three scenarios
 
-**P01：明确承诺。** 调用方念出了付款台词，接听方实际转写为 `The fictional invoice is test dash pizza. Interrupted.`。API 为 unclear，核心为 unsupported / review_required。目标句缺失，调用方的提示不能代替接听方证据。
+**P01, explicit promise:** the caller spoke the example, but the recipient transcript was `The fictional invoice is test dash pizza. Interrupted.` The provider returned `unclear`; the core returned `unsupported / review_required`. The target is absent, and caller instructions cannot substitute for recipient evidence.
 
-**P02：条件承诺。** 接听方实际转写为 `If approved, I will pay USD $100,100 on 10/10/2026.`。API 为 unclear、promise_made=no，金额字段为 100100；条件被保留，但与预设 100.00 不符。核心为 unsupported / review_required。未核查录音，无法断定金额异常源自朗读还是转写，原值原样保留。
+**P02, conditional promise:** the recipient transcript was `If approved, I will pay USD $100,100 on 10/10/2026.` The provider returned `unclear`, `promise_made=no`, and amount `100100`. The condition was retained, but the amount differed from the intended `100.00`. The core returned `unsupported / review_required`. Audio was not reviewed, so the discrepancy cannot yet be attributed to reading or transcription. The original value is retained.
 
-**P03：否认承诺。** 接听方实际转写为 `I will not commit to paying this invoice.`，与预期句一致。API 为 refused、promise_made=no；核心仍为 unsupported / review_required。台词获取与平台拒绝提取得到验证，但核心尚未输出 supported 的拒绝分类。
+**P03, denial:** the recipient said `I will not commit to paying this invoice.`, matching the target. The provider returned `refused` and `promise_made=no`; the core still returned `unsupported / review_required`. Target acquisition and provider refusal extraction were observed, but a core-supported denial classification is not implemented.
 
-## v0.2 具体改了什么
+## What changed in v0.2
 
-- 增加 3 个脱敏回放输入，保留原始台词和结构化金额；替换 call_id，去除号码、账号、录音、凭据及供应商记录定位信息。
-- 增加 scripts/replay.py：分别输出供应商完成标记、接听方精确目标句匹配、提取金额一致性、条件文本是否出现、核心结论和业务状态。
-- 普通回放模式校验历史结果可复现；--require-targets 模式在任一目标句缺失时返回非零，避免将“回归通过”展示成“全部场景通过”。精确匹配仅用于这批固定台词的样本验收，不是通用语义模型。
-- 新增 5 项测试，包括调用方示例不能算作接听方证据、供应商完成不能代替场景完成，以及样本覆盖提示退出码。
-- 接入原有 harness，更新说明、完整补丁（本提交目录只保留完整补丁，避免版本混用）。
+- Added three sanitized replay inputs preserving utterances and extracted amounts; replaced call IDs and omitted phone numbers, account data, recordings, credentials, and provider record locators.
+- Added `scripts/replay.py`, reporting provider completion, exact recipient target matching, extracted-amount consistency, observed condition text, core claim status, and business status.
+- Ordinary replay checks reproduction of observed behavior. `--require-targets` returns nonzero when any exact target line is absent. Exact matching is a fixed-script acquisition check, not a general semantic model.
+- Added five tests, including caller-versus-recipient attribution, separation of provider completion from sample coverage, and the coverage-mode exit code.
+- Integrated replay into the existing harness and updated documentation and the complete patch. Only the complete patch is published here to avoid mixing revisions.
 
-核心金额规则、付款权限、kept 和 Recover 适配器未改。尤其 outcome=unclear/refused 会在核心更深入的证据检查前退出，所以本轮不能证明核心独立识别了条件或金额异常；既有 kept 也会拒绝这些结果，不将其包装为新增保护。
+The core amount rules, payment authority, and kept/Recover adapters are unchanged by this supplement. `unclear/refused` exits before deeper evidence checking, so these replays do not establish independent detection of conditions or amount anomalies. kept already rejects these outcomes; that existing protection is not a new benefit.
 
-## 本次开发验证过程
+## Implementation and verification sequence
 
-1. 读取 T4 原始 API 输出、逐轮转写和核心输入输出，确认异常已经存在于输入，不能靠改期望值“修复”。
-2. 在隔离工作区基于已提交版本 5da61d3 开发，原工作区的未提交删除保持不动。
-3. 先添加测试，首次执行因 replay 模块尚未实现而失败；实现后核心 63 项通过。
-4. 完整运行 harness：核心 63、kept 195、Recover 49，合计 307 项通过；另外 3 个脱敏回放结果符合观察记录。
-5. 普通回放退出码 0；样本覆盖检查退出码 1，用于提示 P01/P02 的补充验证事项。
-6. 仓库规范检查通过。完整补丁在独立 Git 索引中从基线应用，代码树与本版预期完全一致；详见 patch-verification.json。
+1. Inspected T4 API results, transcript turns, and core input/output. The anomalies already existed in the inputs and were not "fixed" by rewriting expectations.
+2. Worked in an isolated checkout based on local implementation commit `5da61d3`, preserving uncommitted deletions in the original checkout.
+3. Added tests first. Initial collection could not import the not-yet-created replay module; after implementation, all 63 core tests passed.
+4. Ran the full harness: 63 core, 195 kept, and 49 Recover tests, totaling 307. The three sanitized replays reproduced their recorded outcomes.
+5. Confirmed ordinary replay exit code 0 and coverage exit code 1, identifying P01/P02 follow-up work.
+6. Ran repository validation and applied the full patch from the baseline in an isolated Git index. The resulting tree matched the expected tree; see [patch-verification.json](patch-verification.json).
 
-harness 日志是本次执行记录。其 42 个原有语料是合成数据；新增 3 个语料来自实际双 AI 脚本电话的脱敏回放。Recover 的供应商和数据库边界依然使用本地替身，未验证真实宿主业务写入。本轮未再次执行 build 或全库 lint；旧版相关记录保留为历史结果。
+The harness logs record this local run. Its original 42 fixtures are synthetic; the three additional inputs are sanitized replays from actual scripted AI-to-AI calls. Recover still uses provider/database substitutes, without real host business writes. The supplement did not rerun build or repository-wide lint; earlier records remain historical results.
 
-## 下一轮方案：尚未实拨验证
+## Proposed next call design, not yet live-validated
 
-将账单编号只放 metadata，不与台词一同播报；先征询接听方是否愿意参与虚构音频测试，每轮只播一句短台词并等待完整回应。金额不一致时最多澄清一次，保存原话与修正后的话；不能静默替换金额。最长 90 秒，明确拒绝即结束，不自动重拨。
+Keep invoice identifiers in metadata rather than speaking them with the target line. Obtain willingness to join a fictional audio test, read one short line at a time, and wait for the complete reply. If an amount differs, clarify at most once while retaining both the original and corrected turns; never silently replace it. Limit the call to 90 seconds, stop on refusal, and do not automatically redial.
 
-下一轮仍需补齐 P01；P02 需核查金额和录音；Recover 重试授权与真实宿主接入需要独立验证。上述话术调整只是待验证方案，不宣称已改善通话成功率、准确率或业务转化。
+P01 still needs a complete sample; P02 needs amount/audio review. Recover retry intent and actual host integration need separate verification. These script changes are proposed experiments, not measured improvements in call success, accuracy, or conversion.

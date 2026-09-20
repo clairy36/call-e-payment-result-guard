@@ -1,26 +1,26 @@
-# 交付内容核对
+# Delivery coverage checklist
 
-核对范围：贡献形式、文字说明、可复现材料与公开边界。本清单用于定位材料，不替代业务有效性验证。
+Scope: contribution format, explanation, reproducibility, and publication boundaries. This checklist locates evidence; it is not a substitute for business-effect validation.
 
-| 内容 | 对应材料 | 核对情况 |
+| Topic | Artifact | Coverage |
 | --- | --- | --- |
-| CALL-E 与社区阶段理解 | PROJECT.md：产品与社区 | 包含上游能力、社区职责与快照范围 |
-| 问题与机会依据 | PROJECT.md：问题、用户与价值；baseline-probes.json 与 after-probes.json | 包含具体输入与实际行为，不只复述 Roadmap |
-| 目标用户及价值 | PROJECT.md：问题、用户与价值 | 区分开发者、运营受益者与尚无实证的收益 |
-| 方案与贡献形式 | PROJECT.md：方案；代码补丁 | 核心、两个薄适配器、可运行工具和 Patch |
-| 取舍和未做事项 | PROJECT.md：关键取舍 | 明确语言、金额、宿主与部署范围 |
-| 验证方法和结果 | RUN.md；ITERATIONS.md；validation-report.json 及日志 | 307 项本地测试、基线对照、3 个脱敏回放和样本覆盖状态 |
-| 风险及真实副作用 | PROJECT.md：安全；RUN.md | 默认无电话/支付，凭据隔离，取消与重复提交边界 |
-| 后续演进 | PROJECT.md：下一步；ITERATIONS.md | P01 样本、P02 金额、Recover 真实场景与宿主接入 |
-| AI 辅助与人工决策 | PROJECT.md：AI 使用与人工判断 | 说明 AI 参与环节和用户保留的选择与授权 |
-| 可评审及可复现 | 完整 Patch、独立源码、运行说明、patch-verification.json | 采用允许的 Patch 形式，无需等待社区合并 |
+| CALL-E and community context | [PROJECT.md](PROJECT.md), sections 1 and 2 | Upstream/community responsibilities and snapshot scope |
+| Problem and opportunity | PROJECT.md, section 2; [baseline](baseline-probes.json) and [after-change probes](after-probes.json) | Concrete inputs and observed behavior, beyond a Roadmap summary |
+| Target users and value | PROJECT.md, section 3 | Developers, operator needs, verified behavior, and unmeasured benefits |
+| Design and contribution form | PROJECT.md, sections 4 and 5; [patch](payment-result-guard.patch) | Core, two thin adapters, executable tooling, and source changes |
+| Tradeoffs and exclusions | PROJECT.md, section 7 | Language, amount, host, and deployment limits |
+| Validation method and results | [RUN.md](RUN.md), [ITERATIONS.md](ITERATIONS.md), [report](validation-report.json), and logs | 307 local tests, baseline comparison, three sanitized replays, and sample coverage |
+| Risks and real-world effects | PROJECT.md, section 7; RUN.md | No calls/payments by default, credential handling, cancellation and duplicate-submission boundaries |
+| Next steps | PROJECT.md, section 9; ITERATIONS.md | P01 sample, P02 amount, Recover live intent, and host integration |
+| AI assistance and human judgment | PROJECT.md, section 8 | AI-supported work and owner-retained choices and authorization |
+| Review and reproduction | Complete patch, RUN.md, [patch verification](patch-verification.json) | Patch delivery against a specified upstream baseline; no dependency on community merge |
 
-## 当前验证状态
+## Current evidence status
 
-代码与本地运行验证：307 项测试已有执行日志，完整补丁已有基线应用记录。
+Code and local paths: execution logs cover 307 tests, and the complete patch has a baseline-application record.
 
-电话样本：P03 完整否认句已取得；P01 待补完整承诺句，P02 待核查金额差异。通话状态、样本覆盖、核心输出及真实宿主接入分别记录，不用单一标签概括全部结果。
+Call samples: P03's complete denial was obtained. P01 needs a full promise line; P02 needs amount investigation. Call status, sample acquisition, core output, and real host integration are reported separately.
 
-默认演示可离线运行。公开材料不包含 API key、真实电话号码、账号、原始录音和可定位供应商记录的 call_id。
+Default demos run offline. Published material excludes API keys, real phone numbers, account data, raw recordings, and call IDs that locate provider records. Source and tests are supplied through the complete patch; this repository is not the full upstream source tree.
 
-本次复核调整说明文字和材料索引，不修改原始观测、核心决策、测试期望或程序退出码，不新增真实通话。
+The publication-language update changes documentation and its checksums only. It does not change observations, core decisions, test expectations, or program exit codes, and it places no new calls. Chinese documentation is retained locally and is not added to the current public tree.

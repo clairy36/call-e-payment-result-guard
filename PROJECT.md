@@ -1,126 +1,126 @@
-# 从电话结论到业务状态：付款结果校验
+# From call conclusions to business state: payment-result evidence checks
 
-**本项目为 CALL-E 社区应用补上一段“结果进入业务系统之前”的证据检查：先判断客户原话是否支持提取结论，再判断该结论最多能推进到哪一步。**
+**This project adds an evidence check before a CALL-E result becomes a business record: first determine whether recipient speech supports the extracted claim, then determine how far that claim can advance the workflow.**
 
-交付包含一份共享 Python 校验核心、kept 与 Recover 两个薄适配器，以及可离线运行的测试和回放工具。它面向已有电话工作流的结果消费环节，默认不拨号、不执行支付。当前版本为 v0.2，属于范围有限的社区参考实现。
+The delivery consists of a shared Python checker, thin kept and Recover adapters, and an offline validation harness. It targets result consumption in existing phone workflows, with no calls or payments in its default execution path. Version v0.2 is a bounded community reference implementation.
 
-## 1. 为什么 CALL-E 工作流需要这一步
+## 1. Why the workflow needs this step
 
-CALL-E 让开发者通过 SDK/API 发起电话、获取转写和结构化结果。对业务系统而言，难点往往出现在电话结束以后：一个 `completed` 状态、一段摘要，或一个 `promise_to_pay` 字段，应该怎样变成业务记录？
+CALL-E lets developers execute phone tasks and retrieve transcripts and structured results through SDKs and APIs. Business systems must then decide what a `completed` status, summary, or `promise_to_pay` field actually permits them to record.
 
-例如，客户说“审批通过后再付”，系统可以记录一个附条件的计划，却不能据此建立无条件付款承诺；客户说“我已经付了”，可以形成待核实的声明，但到账仍要由支付或账务系统确认；客户同意重试扣款，也不意味着资金已经追回。
+A recipient who will pay only after approval has expressed a conditional plan. A recipient who reports having paid has made a statement that still needs settlement evidence. Permission to retry a charge does not establish recovered revenue.
 
-如果结果消费层只检查字段齐全或模型置信度，就可能把不同性质的表达写成同一种状态。后续催收安排、承诺跟踪或运营判断会依赖这些记录。因此，本项目关注的是**业务记录的依据和状态权限**，而不只是电话是否接通、对话是否结束。
+If a consumer checks only field presence or model confidence, these different statements can become the same business state. Subsequent follow-up, promise tracking, and operator decisions depend on those records. The problem is therefore the evidence and authority behind a record, not just whether a conversation ended.
 
-| 层次 | 要回答的问题 | 本项目中的处理 |
+| Layer | Question | Treatment in this project |
 | --- | --- | --- |
-| 通话执行 | 是否完成拨号和对话？ | 使用 CALL-E 返回的执行信息，不替代 Provider |
-| 证据支持 | 接听方确实说过什么？是否支持金额、日期和意向？ | 对绑定后的转写、引用和字段做有限规则检查 |
-| 业务状态 | 有证据的结论可以记录为什么？ | 区分可记录承诺、待复核、建议、待外部核实 |
-| 资金结果 | 是否实际支付、入账或追回？ | 由独立业务系统和授权流程确认，不由电话结论推导 |
+| Call execution | Did the call and conversation finish? | Consume CALL-E execution information; do not replace the provider |
+| Evidence | What did the recipient say, and does it support the amount, date, and intent? | Apply bounded checks to host-bound transcripts, quotes, and fields |
+| Business state | What kind of record can the supported claim justify? | Distinguish recordable promises, review, advice, and external verification |
+| Financial result | Was money paid, settled, or recovered? | Require independent business systems and authorization |
 
-研究基于 2026-09-20 的仓库快照。社区 README 和 Roadmap 将 SDK、认证、API、通话执行及 Provider 控制划归 CALL-E 上游，社区层则提供 Skills、Apps、Plugins、模板和安全模式，并鼓励小型、易复用、可离线尝试的贡献。本项目落在这一社区边界内：复用电话能力，为应用如何处理结果提供可检查的参考。
+Research used a repository snapshot from 2026-09-20. The community README and Roadmap place SDKs, authentication, APIs, call execution, and provider controls upstream with CALL-E. The community supplies Skills, Apps, Plugins, templates, and safety patterns, favoring small, reusable, offline-friendly contributions. This project works within that boundary by showing how an application can consume call results more carefully.
 
-## 2. 问题怎样被发现：从代码和输入验证出发
+## 2. How the opportunity was identified
 
-研究先检查了账单付款相关实现，并阅读 Verity、Rebuttal、Kol、Trunkline 等项目的校验设计。它们提供了有价值的模式，但领域对象和契约不同，没有直接将其引擎包装成通用财务校验器。
+The investigation examined payment-related projects and reviewed patterns in Verity, Rebuttal, Kol, and Trunkline. Those projects offered useful approaches, but their domain objects and contracts differed. Their engines were not imported as a generic financial validator.
 
-具体切入点来自 kept 的本地合成输入探测。在保留有效业务绑定和高置信度的情况下，改变金额字段或证据原话，观察是否仍会记录承诺：
+The concrete entry point came from synthetic probes against kept. With valid business binding and high confidence preserved, the probes changed the amount field or evidence quote and observed whether a promise was recorded.
 
-| 探测输入 | 原有本地行为 | 加入本项目后的同类输入行为 | 对业务记录的意义 |
+| Probe | Original local behavior | Behavior with this contribution | Significance |
 | --- | --- | --- | --- |
-| 金额 `1k` | 记录为 100 最小单位，即 USD 1.00 | 不创建 Promise，返回 `AMBIGUOUS_AMOUNT` | 对未支持的金额表达保留不确定性，避免错误确定金额 |
-| 金额 `100 if approved`，原话包含审批条件 | 记录为普通付款承诺，金额 10000 最小单位 | 转复核，返回 `CONDITIONAL_STATEMENT` | 保留“计划有前提”与“明确承诺”的区别 |
-| 金额 1250，原话却否认可承诺付款日期 | 仍记录承诺，金额 125000 最小单位 | 转复核，返回 `CONTRADICTORY_EVIDENCE` | 不让结构化结论覆盖与之冲突的客户原话 |
+| Amount `1k` | Recorded 100 minor units, or USD 1.00 | No Promise; `AMBIGUOUS_AMOUNT` | Preserve uncertainty for unsupported notation instead of asserting the wrong amount |
+| Amount `100 if approved`, with an approval condition in the quote | Recorded an ordinary promise for 10000 minor units | Review; `CONDITIONAL_STATEMENT` | Keep a conditional plan distinct from an unconditional promise |
+| Amount 1250, with a quote denying commitment to a payment date | Recorded a promise for 125000 minor units | Review; `CONTRADICTORY_EVIDENCE` | Do not let extracted fields override conflicting recipient speech |
 
-问题原因包括宽松金额清洗，以及保存证据文本后没有独立检查其是否支持承诺。这些是指定版本、指定本地输入下可复现的结果；它们没有证明 CALL-E 在线经常生成这些输入，也没有证明发生过真实资金损失。基线与改动后的输出分别保存在[基线输出](baseline-probes.json)和[改动后输出](after-probes.json)。
+Contributing causes included permissive numeric cleaning and saving evidence text without independently checking its support for the promise. These are reproducible observations for specified local inputs and a specified version. They do not establish that CALL-E frequently generates such inputs online or that real losses occurred. See the [baseline output](baseline-probes.json) and [after-change output](after-probes.json).
 
-Recover 提供了另一种验证角度：它原本就将财务效果限制为建议，并保持 `recoveredCents=0`。本项目复用这条边界，补充“客户原话能否支持重试建议”的检查，不能把原有的零回收金额或不直接扣款机制算作新增功能。
+Recover supplies a second perspective. It already kept financial effects advisory and maintained `recoveredCents=0`. This contribution preserves that boundary while checking whether recipient speech supports retry advice. Existing advisory and zero-recovery controls are not presented as new functionality.
 
-## 3. 为谁解决问题，价值体现在哪里
+## 3. Users and practical value
 
-**直接用户是消费 CALL-E 结果的应用开发者。** 他们需要把电话结果映射到自身的发票、订阅和跟进记录，处理的并不只是字段格式，还有条件、否认、修正、证据缺失与来源不明确。共用契约让两个应用能复用证据检查，宿主仍保留自己的策略和状态管理。
+**The direct users are developers consuming CALL-E results.** Mapping a call into invoice, subscription, or follow-up records involves conditions, denials, corrections, missing evidence, and source ambiguity, not merely formatting fields. A shared contract lets two applications reuse evidence checks while retaining their own policies and state management.
 
-**业务受益者是付款跟进运营人员。** 当结果不能直接记录时，系统可以保留机器可读的原因和适用的证据引用，帮助区分“金额表达不支持”“有审批条件”“结论与原话矛盾”等情况。当前交付的是接口和示例接入，没有新增运营后台，也尚未测量人工复核耗时的变化。
+**Payment-follow-up operators are downstream beneficiaries.** When a result cannot be recorded directly, machine-readable reasons and applicable evidence references can distinguish unsupported amounts, approval conditions, and conflicting speech. The current delivery provides interfaces and example integrations, not a new operations dashboard. It has not measured review-time savings.
 
-**社区维护者和贡献者可以复现问题及改动。** 默认路径无需真实号码或 API key，代码以有限范围的 Patch 提供；既能看指定输入的前后对照，也能检查改动是否影响原有宿主流程。
+**Community contributors can inspect and reproduce the change.** Default validation needs no real number or API key. A limited patch exposes both before/after behavior for specific inputs and the checks protecting the existing host paths.
 
-| 价值方向 | 当前已提供的依据 | 尚不能据此得出的结论 |
+| Value area | Current evidence | What it does not establish |
 | --- | --- | --- |
-| 提高特定业务记录的可靠性 | 三类合成输入不再直接创建错误或缺乏支持的 Promise | 线上错误率下降幅度、真实损失减少 |
-| 提高结果解释性 | 证据状态、业务状态、原因码和适用的原话引用分别输出 | 运营处理效率已经提升 |
-| 支持跨应用复用 | Python 的 kept 与 TypeScript 的 Recover 接入同一核心 | 所有付款项目可无成本接入 |
-| 降低复现门槛 | 离线 demo、统一 harness、固定语料和可应用补丁 | 生产环境已部署或具备完整运维能力 |
-| 避免验证结论混淆 | 将通话完成、样本取得、回归结果分别报告 | 脚本电话代表自然客户对话的整体准确率 |
+| More reliable records for specific inputs | Three synthetic input classes no longer directly create unsupported or incorrect Promise records | Online error-rate reduction or avoided financial losses |
+| More explainable handling | Separate claim status, business status, reason codes, and applicable quote references | Measured operator-efficiency improvement |
+| Cross-application reuse | Python kept and TypeScript Recover call the same core | Effortless integration with every payment application |
+| Easier reproduction | Offline demo, unified harness, fixed fixtures, and an applicable patch | Production deployment or operational readiness |
+| Clearer validation interpretation | Call completion, sample acquisition, and regression results are reported separately | General accuracy on natural customer conversations |
 
-## 4. 两个案例如何验证同一个共性问题
+## 4. Two applications, one shared problem
 
-### kept：承诺可以记录，到账仍需独立确认
+### kept: record a promise without claiming settlement
 
-kept 的场景是应收账单跟进：取得客户的付款意向后，决定是否建立 Promise，供后续跟踪使用。
+kept follows up on receivables and decides whether to create a Promise for later tracking.
 
-接入位置在**原有绑定与策略检查之后、Promise 构建之前**。适配器将宿主已确认的业务对象、金额上下文、通话结果和逐轮转写交给共享核心。满足限定表达和证据条件的承诺可继续走原有记录路径；条件计划、矛盾或缺证据结果转复核。原有置信度、日期窗口、金额策略和账本机制继续负责各自职责。
+The adapter runs **after existing binding and policy checks, before Promise construction**. It supplies the host's business object, amount context, call result, and transcript to the shared core. A statement meeting the bounded expression and evidence rules can continue through the existing record path. Conditional, contradictory, or incomplete evidence is routed for review. Confidence, date windows, amount policies, and ledger behavior remain host responsibilities.
 
-例如，“I will pay USD 100.00 on October 10, 2026.” 在来源、字段和上下文等条件也满足时，可以支持记录一个付款承诺。即使客户改说“我已付款”，电话也只能提供客户声明，不能把发票直接标记为到账。
+For example, "I will pay USD 100.00 on October 10, 2026." can support a promise record when source, field, and context requirements also hold. A statement that payment has already occurred still cannot settle the invoice without independent evidence.
 
-本地验证使用原 SDK、模拟 transport、capture 与临时 ledger，观察的是实际记录入口的行为，不只单独调用一个字符串函数。
+Local verification exercises the original SDK, simulated transport, capture function, and temporary ledger. It checks the recording entry point rather than only calling a standalone string checker.
 
-### Recover：重试意向可以支持建议，不能证明追回金额
+### Recover: intent can support advice, not recovered revenue
 
-Recover 的场景是订阅扣款异常后的跟进。客户可能请求重试、更新卡片或暂停订阅，这些意向对应不同后续动作。
+Recover follows up after subscription charge problems. A recipient may request a retry, a card update, or a pause, each implying a different next step.
 
-接入位置在**原有鉴权与权威回查之后、建议保存之前**。Node 适配器通过固定 Python 模块调用共享核心，将结构化 decision 与客户原话一起检查。明确的重试请求只能形成建议；简短的 “Yes” 只有在前一句是单一、明确的重试问题时，才在限定规则内可用。校验异常不能直接退回无证据接受路径。
+The adapter runs **after authentication and authoritative lookup, before advice persistence**. Node invokes a fixed Python module and submits the extracted decision together with recipient speech. An explicit retry request remains advisory. A short "Yes" is usable within the limited grammar only when the preceding question asks one explicit retry question. An unavailable or malformed checker result must not silently restore unguarded acceptance.
 
-本地验证覆盖实际 POST 路由和 Python 子进程；供应商回查与数据库边界使用替身。没有发起真实 Stripe 扣款或验证实际回收金额。
+Local checks exercise the actual POST route and Python process, while substituting provider lookup and database boundaries. No real Stripe charge or recovery amount was verified.
 
-两个案例共享的是“结论—原话—业务资格”的检查方式，而不是统一它们的账本、支付逻辑或运营流程。这是将贡献控制在可复用小模块内的关键取舍。
+The shared capability is the relationship between a conclusion, its supporting speech, and the next permitted record. The contribution does not unify the hosts' ledgers, payment logic, or operator workflows. That choice keeps the reusable component small.
 
-## 5. 实现提供了怎样的接口与交付
+## 5. Interface and deliverables
 
-核心输入包括业务对象上下文、宿主提供的来源绑定和单次尝试范围、结构化结论，以及带说话人与引用标识的转写。来源标签本身不构成认证，CLI 不能替宿主证明对象绑定真实有效。
+Input includes business context, host-supplied source binding and attempt scope, structured claims, and transcript turns with speaker and reference identifiers. A source label is not authentication: a CLI caller can forge it, so the checker cannot establish binding on behalf of the host.
 
-输出把两个判断分开：`claim_status` 描述证据对结论的支持情况，`business_effect_status` 描述可推进的业务范围；同时提供 `reason_codes`、适用的 `evidence_refs` 和 `next_step`。所有结果中的 `execution_authorized` 都为 `false`。
+Output separates `claim_status` from `business_effect_status` and includes `reason_codes`, applicable `evidence_refs`, and `next_step`. Every result keeps `execution_authorized=false`.
 
-例如，有限语法内有支持的付款承诺可标为 `recordable`；明确重试意向保持 `advisory_only`；声称已付进入 `pending_external_verification`；无法可靠判断的结果进入 `review_required`。这些状态是宿主消费结果的依据，不是新的支付执行服务。
+Within the limited grammar, a supported promise may be `recordable`; a retry request remains `advisory_only`; a report of payment remains `pending_external_verification`; uncertain results require review. These states guide the host's consumption of a result, not a new payment-execution service.
 
-交付包含共享核心、两个薄适配器、宿主最小接入路径、42 个基础合成案例、3 个脱敏脚本电话回放、测试脚本及完整补丁。源码包含在[代码补丁](payment-result-guard.patch)中，结果见[验证报告](validation-report.json)及测试日志，运行步骤见 [RUN.md](RUN.md)。
+The delivery includes the shared core, both adapters, minimal host entry points, 42 synthetic fixtures, three sanitized scripted-call replays, test scripts, and a complete patch. Source is in [payment-result-guard.patch](payment-result-guard.patch); results are in [validation-report.json](validation-report.json) and the test logs. See [RUN.md](RUN.md) for setup.
 
-## 6. 验证结果，以及真实电话带来的迭代
+## 6. Verification and the live-call learning loop
 
-当前本地验证为 **307 项测试：核心 63、kept 195、Recover 49**。42 个基础合成案例中，付款承诺 26 个、恢复意向 16 个，覆盖预期正常表达、条件、矛盾、来源与异常边界。测试数量包含 CLI、适配器和宿主路径等检查，不等于 307 个真实电话。
+Current local validation covers **307 tests: 63 core, 195 kept, and 49 Recover**. The 42 baseline synthetic fixtures comprise 26 promise cases and 16 recovery-intent cases. Additional tests cover CLI behavior, adapters, host paths, and errors; this count is not a count of real calls.
 
-随后进行的实际双 AI 电话进一步暴露了验证过程本身的问题：电话完成并不代表取得了设计中的测试样本。
+Actual AI-to-AI calls then exposed a separate testing issue: task completion does not establish that the intended sample was obtained.
 
-| 系统话术场景 | 接听方实际表现 | 当前保留的结论 |
+| Scripted scenario | Recipient behavior | Current interpretation |
 | --- | --- | --- |
-| P01 明确承诺 | 同意模拟，但返回不完整的账单编号句子 | 待补完整承诺句；调用方念出的示例不能算接听方证据 |
-| P02 条件承诺 | 返回 “If approved”，但金额转写和提取为 100100，预设为 100.00 | 条件表达已取得，金额差异待结合录音核查 |
-| P03 否认承诺 | 完整返回 “I will not commit to paying this invoice.” | 已取得完整否认台词，平台提取为 refused |
+| P01, explicit promise | Agreed to participate but returned an incomplete invoice phrase | Full promise sample still needed; the caller's example is not recipient evidence |
+| P02, conditional promise | Said "If approved," with 100100 in transcript and extraction rather than the intended 100.00 | Conditional language observed; amount discrepancy needs audio investigation |
+| P03, denial | Returned "I will not commit to paying this invoice." | Complete denial obtained; provider extracted `refused` |
 
-v0.2 因此新增样本回放与覆盖检查，分别报告供应商任务完成、接听方目标句、提取金额一致性和核心输出。普通回放返回 0，表示三个历史观察结果可以复现；覆盖检查返回 1，提示还有目标样本待补充。原始异常金额保留，不替换成预设值。
+Version v0.2 adds replay and coverage checks to report provider completion, recipient target acquisition, extracted-amount consistency, and core output separately. Ordinary replay exits 0 when the three observed outcomes are reproduced. Coverage mode exits 1 to identify outstanding target samples. Anomalous amounts are preserved instead of replaced with intended values.
 
-三个样本的核心结果均为 `unsupported / review_required`。由于当前核心对 `unclear/refused` 在深入证据检查前就退出，不能把本轮回放当作核心独立识别条件或金额异常的证明。P03 的完整原话也不代表核心已支持拒绝语义分类。这些限制在[版本迭代记录](ITERATIONS.md)中逐轮保留。
+All three core outputs are `unsupported / review_required`. The core exits early for `unclear/refused`, before deeper evidence checks. Consequently, this round does not prove independent condition or amount detection by the core, and P03 does not establish a supported-denial classification. The [iteration record](ITERATIONS.md) preserves these limits and the preceding rounds.
 
-## 7. 关键取舍与责任边界
+## 7. Tradeoffs and responsibility
 
-当前规则仅覆盖有限 en-US、USD 数字金额和明确日期表达，口语数字、多语言、相对日期与复杂语义保留复核。采用确定性检查便于复现，但覆盖面较窄，不将其描述为通用自然语言理解系统。
+The checker covers only bounded en-US expressions, numeric USD amounts, and absolute dates. Spoken numbers, other languages, relative dates, and complex semantics require review. Deterministic rules support reproduction but have limited coverage; this is not a general language-understanding system.
 
-Recover 的跨语言复用通过本地 Python 子进程实现，带来解释器依赖；已验证本地 Node 路径，没有宣称 Edge/serverless 部署可用。没有新建财务平台、运营后台、调度器或支付执行器，也没有补齐原宿主全部回调恢复和并发机制。
+Recover reuses Python through a local subprocess, adding an interpreter dependency. The local Node path is verified; Edge/serverless deployment is not. The contribution does not build a financial platform, operations UI, scheduler, or payment executor, or complete every host recovery and concurrency mechanism.
 
-默认测试不拨号、不支付、不要求凭据。既往真实电话均在用户授权下限定测试线路、逐项执行，不自动重拨；查询中断后恢复同一 call_id 的只读查询。停止查询或关闭页面不等于取消已提交电话。公开文件不含 API key、真实号码、原始录音或可定位账号的供应商通话记录。
+Default checks need no credentials and make no calls or payments. Previous real calls were explicitly authorized, restricted to test lines, run sequentially, and not automatically redialed. After a query interruption, only the existing call ID was queried. Stopping a query or closing a page does not cancel a submitted call. Public artifacts omit API keys, real phone numbers, raw recordings, and provider record identifiers that locate the account's calls.
 
-宿主负责身份、号码授权、业务对象绑定和自身状态策略；宿主 Scheduler 负责调度；CALL-E 负责电话执行；实际到账和资金动作仍由独立系统及授权人员确认。
+The host owns identity, recipient authorization, object binding, and state policy; the host scheduler owns recurrence; CALL-E owns execution; independent systems and authorized people own settlement and actual financial actions.
 
-## 8. AI 如何参与，哪些判断由人保留
+## 8. AI assistance and human judgment
 
-AI 辅助研究仓库、阅读代码、比较已有工具、编写实现与测试、运行验证、检查实际转写并整理文档。工作形成了可核对的链条：代码发现 → 合成输入复现 → 接入实现 → 回归验证 → 实际脚本电话 → 脱敏回放与报告迭代。
+AI assisted repository research, code reading, comparison of existing tools, implementation, tests, execution, transcript inspection, and documentation. The work followed a traceable sequence: code finding, synthetic reproduction, integration, regression checks, actual scripted calls, and sanitized replay/documentation updates.
 
-用户保留问题选择、付款领域范围、跨应用复用方向、真实电话授权、接听线路和话术调整等关键判断。AI 生成的结论通过源码、原始输入输出、日志和补丁核对，不以助手摘要替代证据。实际工作跨多轮研究与验证，没有将全部成果描述成三小时内完成。
+The project owner retained the choice of problem, payment-domain scope, cross-application direction, real-call authorization, recipient routing, and script changes. Generated conclusions were checked against source, inputs and outputs, logs, and patches rather than assistant summaries. Work spanned multiple rounds; the full delivery is not described as having been completed within three hours.
 
-## 9. 下一步如何判断是否值得继续投入
+## 9. How to decide whether to invest further
 
-近期先补齐 P01 样本并核查 P02 金额录音，确认问题位于台词朗读、转写、提取还是本地消费环节。随后以新的回归案例为前提，评估是否增加拒绝分类和口语金额支持；新增表达应同时检查正常接受和错误接受，不能只让固定样本变成理想结果。
+First acquire P01's full sample and inspect the audio behind P02's amount discrepancy to distinguish script reading, transcription, extraction, and local consumption. Then use new regression cases to evaluate denial classification and spoken-number support. Expanded coverage should examine both normal acceptance and erroneous acceptance rather than merely making fixed fixtures look ideal.
 
-跨项目方向则需独立验证 Recover 的真实重试意向，以及受控环境中的宿主接入。未来衡量价值可关注不一致记录的检出情况、正常结果被转复核的比例、运营复核耗时和接入改动量；这些是待建立的衡量指标，不是本版已取得的业务成绩。
+Separately validate Recover's live retry-intent scenario and controlled host integration. Future measures could include detection of inconsistent records, the proportion of valid results routed to review, operator review time, and integration effort. These are proposed measures, not achieved business outcomes.
 
-研究依据为固定快照中的 README、Roadmap、AGENTS.md、社区审查规范及 kept / Recover 源码。对应上游项目为 CALLE-AI/call-e-integrations 和 CALLE-AI/awesome-phone-call-agents；完整基线与复现方法见运行说明。
+Research sources were the fixed-snapshot READMEs, Roadmap, AGENTS.md, community review policy, and kept/Recover source. The upstream projects are CALLE-AI/call-e-integrations and CALLE-AI/awesome-phone-call-agents. The exact patch baseline and reproduction steps are in the run guide.
